@@ -26,9 +26,17 @@ Sigue la guía paso a paso incluida en **GUIA-DESPLIEGUE.md**. En resumen:
 2. En **Supabase**, crea un proyecto y ejecuta el archivo `supabase/schema.sql`
    en el *SQL Editor*.
 3. En **Vercel**, importa el repositorio y agrega las variables de entorno:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-4. ¡Despliega y crea tu cuenta!
+   - `NEXT_PUBLIC_SUPABASE_URL` → tu Project URL de Supabase
+   - `SUPABASE_SERVICE_ROLE_KEY` → tu clave secreta (`sb_secret_...` / service_role)
+   - `APP_PASSWORD` → la contraseña única para entrar a la app
+4. ¡Despliega y entra con tu contraseña!
+
+## Acceso
+
+La app se protege con **una sola contraseña** (variable `APP_PASSWORD`), sin
+cuentas ni correos. Los datos son **compartidos**: todos los que entren con la
+contraseña ven y editan la misma información. La base de datos solo es accesible
+desde el servidor (con la clave secreta), nunca directamente desde el navegador.
 
 ## Ejecutar en tu computador (opcional)
 

@@ -19,7 +19,7 @@ const nav = [
   { href: "/goals", label: "Metas", icon: Target },
 ];
 
-export default function Sidebar({ email }: { email: string }) {
+export default function Sidebar() {
   const pathname = usePathname();
 
   return (
@@ -57,9 +57,6 @@ export default function Sidebar({ email }: { email: string }) {
         </nav>
 
         <div className="mt-auto border-t border-gray-100 pt-3">
-          <p className="truncate px-3 pb-2 text-xs text-gray-400" title={email}>
-            {email}
-          </p>
           <form action="/auth/signout" method="post">
             <button type="submit" className="btn-ghost w-full justify-start">
               <LogOut size={18} />

@@ -14,10 +14,6 @@ function revalidateAll() {
 
 export async function createTransaction(formData: FormData): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const type = String(formData.get("type")) as TxType;
   const amount = Number(formData.get("amount"));
@@ -30,7 +26,6 @@ export async function createTransaction(formData: FormData): Promise<Result> {
     return { ok: false, error: "Tipo inválido." };
 
   const { error } = await supabase.from("transactions").insert({
-    user_id: user.id,
     type,
     amount,
     category_id: categoryId || null,

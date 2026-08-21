@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { AUTH_COOKIE } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  const supabase = createClient();
-  await supabase.auth.signOut();
+  cookies().delete(AUTH_COOKIE);
   return NextResponse.redirect(new URL("/login", request.url), {
     status: 302,
   });

@@ -14,10 +14,6 @@ function revalidateAll() {
 
 export async function createCategory(formData: FormData): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const name = String(formData.get("name") || "").trim();
   const type = String(formData.get("type")) as TxType;
@@ -31,7 +27,6 @@ export async function createCategory(formData: FormData): Promise<Result> {
     return { ok: false, error: "Tipo inválido." };
 
   const { error } = await supabase.from("categories").insert({
-    user_id: user.id,
     name,
     type,
     color,
@@ -91,10 +86,6 @@ export async function deleteCategory(id: string): Promise<Result> {
 // Crea un set de categorías por defecto (útil si la cuenta quedó sin ninguna).
 export async function seedDefaultCategories(): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const defaults = [
     { name: "Sueldo", type: "income", color: "#2f8a58" },
@@ -110,7 +101,7 @@ export async function seedDefaultCategories(): Promise<Result> {
   ];
 
   const { error } = await supabase.from("categories").insert(
-    defaults.map((d) => ({ ...d, user_id: user.id, monthly_budget: null }))
+    defaults.map((d) => ({ ...d, monthly_budget: null }))
   );
   if (error) return { ok: false, error: error.message };
   revalidateAll();

@@ -1,34 +1,19 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
-// Cliente de Supabase para Server Components, Server Actions y Route Handlers.
+// Cliente de Supabase con permisos de servidor (clave secreta / service role).
+// SOLO se usa desde el servidor (Server Components y Server Actions), nunca
+// desde el navegador: la clave secreta jamás se envía al cliente.
+//
+// Con esto, la base de datos NO es accesible directamente desde afuera
+// (la protección real está en el servidor + la contraseña de la app).
 export function createClient() {
-  const cookieStore = cookies();
-
-  return createServerClient(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(
-          cookiesToSet: {
-            name: string;
-            value: string;
-            options?: CookieOptions;
-          }[]
-        ) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options as any)
-            );
-          } catch {
-            // El método setAll fue llamado desde un Server Component.
-            // Se puede ignorar si hay un middleware refrescando las sesiones.
-          }
-        },
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
       },
     }
   );

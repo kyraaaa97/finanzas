@@ -5,7 +5,6 @@ export type Frequency = "weekly" | "monthly" | "yearly";
 
 export interface Category {
   id: string;
-  user_id: string;
   name: string;
   type: TxType;
   color: string;
@@ -15,7 +14,6 @@ export interface Category {
 
 export interface Transaction {
   id: string;
-  user_id: string;
   category_id: string | null;
   type: TxType;
   amount: number;
@@ -27,7 +25,6 @@ export interface Transaction {
 
 export interface RecurringTransaction {
   id: string;
-  user_id: string;
   category_id: string | null;
   type: TxType;
   amount: number;
@@ -41,7 +38,6 @@ export interface RecurringTransaction {
 
 export interface Goal {
   id: string;
-  user_id: string;
   name: string;
   target_amount: number;
   current_amount: number;

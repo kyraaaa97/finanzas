@@ -17,10 +17,6 @@ function revalidateAll() {
 
 export async function createGoal(formData: FormData): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const name = String(formData.get("name") || "").trim();
   const target = Number(formData.get("target_amount"));
@@ -33,7 +29,6 @@ export async function createGoal(formData: FormData): Promise<Result> {
     return { ok: false, error: "La meta debe ser mayor a 0." };
 
   const { error } = await supabase.from("goals").insert({
-    user_id: user.id,
     name,
     target_amount: target,
     current_amount: current > 0 ? current : 0,
@@ -77,10 +72,6 @@ export async function deleteGoal(id: string): Promise<Result> {
 
 export async function createRecurring(formData: FormData): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const type = String(formData.get("type")) as TxType;
   const amount = Number(formData.get("amount"));
@@ -92,7 +83,6 @@ export async function createRecurring(formData: FormData): Promise<Result> {
   if (!amount || amount <= 0) return { ok: false, error: "Monto inválido." };
 
   const { error } = await supabase.from("recurring_transactions").insert({
-    user_id: user.id,
     type,
     amount,
     category_id: categoryId || null,
@@ -110,10 +100,6 @@ export async function createRecurring(formData: FormData): Promise<Result> {
 // Registra el movimiento recurrente como transacción real y avanza la fecha.
 export async function applyRecurring(id: string): Promise<Result> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Sesión no válida." };
 
   const { data: rec, error: readErr } = await supabase
     .from("recurring_transactions")
@@ -123,7 +109,6 @@ export async function applyRecurring(id: string): Promise<Result> {
   if (readErr || !rec) return { ok: false, error: "No encontrado." };
 
   const { error: insErr } = await supabase.from("transactions").insert({
-    user_id: user.id,
     type: rec.type,
     amount: rec.amount,
     category_id: rec.category_id,
