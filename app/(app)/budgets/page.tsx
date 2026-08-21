@@ -3,7 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import BudgetManager, { type BudgetRow } from "@/components/BudgetManager";
 import CategoryManager from "@/components/CategoryManager";
 import SeedCategoriesButton from "@/components/SeedCategoriesButton";
-import { firstDayOfMonth, lastDayOfMonth, monthLabel } from "@/lib/utils";
+import {
+  firstDayOfMonth,
+  lastDayOfMonth,
+  monthLabel,
+  formatCurrency,
+} from "@/lib/utils";
 import type { Category, Transaction } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -38,6 +43,14 @@ export default async function BudgetsPage() {
     .map((c) => ({ category: c, spent: spentByCategory.get(c.id) ?? 0 }))
     .sort((a, b) => b.spent - a.spent);
 
+  // Totales del mes: presupuesto asignado, gastado y restante.
+  const totalBudget = rows.reduce(
+    (s, r) => s + Number(r.category.monthly_budget ?? 0),
+    0
+  );
+  const totalSpent = rows.reduce((s, r) => s + r.spent, 0);
+  const totalRemaining = totalBudget - totalSpent;
+
   if (cats.length === 0) {
     return (
       <div>
@@ -63,6 +76,32 @@ export default async function BudgetsPage() {
           title="Presupuestos"
           subtitle={`Límites de gasto de ${monthLabel()}.`}
         />
+
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          <div className="card">
+            <p className="text-xs text-gray-500">Presupuesto total</p>
+            <p className="mt-1 text-lg font-bold text-gray-900">
+              {formatCurrency(totalBudget)}
+            </p>
+          </div>
+          <div className="card">
+            <p className="text-xs text-gray-500">Gastado</p>
+            <p className="mt-1 text-lg font-bold text-red-500">
+              {formatCurrency(totalSpent)}
+            </p>
+          </div>
+          <div className="card">
+            <p className="text-xs text-gray-500">Disponible</p>
+            <p
+              className={`mt-1 text-lg font-bold ${
+                totalRemaining < 0 ? "text-red-500" : "text-brand-600"
+              }`}
+            >
+              {formatCurrency(totalRemaining)}
+            </p>
+          </div>
+        </div>
+
         <BudgetManager rows={rows} />
       </div>
 
