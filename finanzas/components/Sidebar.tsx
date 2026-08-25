@@ -7,7 +7,7 @@ import {
   ArrowLeftRight,
   PiggyBank,
   Target,
-  LogOut,
+  CalendarDays,
   Wallet,
 } from "lucide-react";
 import { classNames } from "@/lib/utils";
@@ -17,6 +17,7 @@ const nav = [
   { href: "/transactions", label: "Movimientos", icon: ArrowLeftRight },
   { href: "/budgets", label: "Presupuestos", icon: PiggyBank },
   { href: "/goals", label: "Metas", icon: Target },
+  { href: "/calendar", label: "Calendario", icon: CalendarDays },
 ];
 
 export default function Sidebar() {
@@ -55,15 +56,6 @@ export default function Sidebar() {
             );
           })}
         </nav>
-
-        <div className="mt-auto border-t border-gray-100 pt-3">
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="btn-ghost w-full justify-start">
-              <LogOut size={18} />
-              Cerrar sesión
-            </button>
-          </form>
-        </div>
       </aside>
 
       {/* Barra inferior móvil */}
