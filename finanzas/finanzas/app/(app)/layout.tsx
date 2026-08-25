@@ -1,20 +1,11 @@
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { AUTH_COOKIE, expectedToken } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 
-export default async function AppLayout({
+// App abierta: sin verificación de contraseña.
+export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const expected = await expectedToken();
-  const cookie = cookies().get(AUTH_COOKIE)?.value;
-
-  if (!expected || cookie !== expected) {
-    redirect("/login");
-  }
-
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
