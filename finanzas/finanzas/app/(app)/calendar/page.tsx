@@ -66,6 +66,8 @@ export default function CalendarPage() {
   const [viewMonth, setViewMonth] = useState(now.getMonth());
 
   const [open, setOpen] = useState(false);
+  const [dayOpen, setDayOpen] = useState(false);
+  const [dayDate, setDayDate] = useState(todayStr);
   const [formDate, setFormDate] = useState(todayStr);
   const [label, setLabel] = useState("");
   const [color, setColor] = useState(PALETTE[1]);
@@ -120,6 +122,11 @@ export default function CalendarPage() {
     setColor(PALETTE[1]);
     setError(null);
     setOpen(true);
+  }
+
+  function openDay(date: string) {
+    setDayDate(date);
+    setDayOpen(true);
   }
 
   function handleSubmit(formData: FormData) {
@@ -201,7 +208,7 @@ export default function CalendarPage() {
             return (
               <button
                 key={date}
-                onClick={() => openNew(date)}
+                onClick={() => openDay(date)}
                 className={classNames(
                   "flex min-h-[42px] flex-col rounded-lg border p-1 text-left transition-colors hover:border-brand-300 hover:bg-brand-50/40 sm:min-h-[54px]",
                   isToday ? "border-brand-400 bg-brand-50" : "border-gray-100"
@@ -315,6 +322,73 @@ export default function CalendarPage() {
         </div>
       )}
 
+      {/* Modal resumen del día */}
+      <Modal
+        open={dayOpen}
+        onClose={() => setDayOpen(false)}
+        title={longDate(dayDate)}
+      >
+        <div className="space-y-3">
+          {(byDate.get(dayDate) ?? []).length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No hay eventos este día todavía.
+            </p>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {(byDate.get(dayDate) ?? []).map((ev) => (
+                <div key={ev.id} className="flex items-center gap-3 py-2.5">
+                  <span
+                    className="h-8 w-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: ev.color }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900">
+                      {ev.title}
+                    </p>
+                    <p className="flex items-center gap-2 text-xs text-gray-400">
+                      {ev.time && (
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />
+                          {ev.time}
+                        </span>
+                      )}
+                      {ev.label && (
+                        <span
+                          className="rounded-full px-1.5 py-0.5 text-[10px] font-medium text-white"
+                          style={{ backgroundColor: ev.color }}
+                        >
+                          {ev.label}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(ev.id)}
+                    disabled={pending}
+                    className="rounded-lg p-1.5 text-gray-300 hover:bg-red-50 hover:text-red-500"
+                    aria-label="Eliminar"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            className="btn-primary w-full"
+            onClick={() => {
+              setDayOpen(false);
+              openNew(dayDate);
+            }}
+          >
+            <Plus size={18} />
+            Agregar evento este día
+          </button>
+        </div>
+      </Modal>
+
+      {/* Modal nuevo evento */}
       <Modal open={open} onClose={() => setOpen(false)} title="Nuevo evento">
         <form action={handleSubmit} className="space-y-4">
           <div>
