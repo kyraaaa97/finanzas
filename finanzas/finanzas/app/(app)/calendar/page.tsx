@@ -203,7 +203,7 @@ export default function CalendarPage() {
                 key={date}
                 onClick={() => openNew(date)}
                 className={classNames(
-                  "flex min-h-[54px] flex-col rounded-lg border p-1 text-left transition-colors hover:border-brand-300 hover:bg-brand-50/40",
+                  "flex min-h-[42px] flex-col rounded-lg border p-1 text-left transition-colors hover:border-brand-300 hover:bg-brand-50/40 sm:min-h-[54px]",
                   isToday ? "border-brand-400 bg-brand-50" : "border-gray-100"
                 )}
               >
@@ -215,7 +215,20 @@ export default function CalendarPage() {
                 >
                   {dayNum}
                 </span>
-                <div className="flex flex-col gap-0.5 overflow-hidden">
+
+                {/* Móvil: solo puntos de color */}
+                <div className="flex flex-wrap gap-0.5 sm:hidden">
+                  {dayEvents.slice(0, 4).map((ev) => (
+                    <span
+                      key={ev.id}
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: ev.color }}
+                    />
+                  ))}
+                </div>
+
+                {/* Escritorio: etiquetas con texto */}
+                <div className="hidden flex-col gap-0.5 overflow-hidden sm:flex">
                   {dayEvents.slice(0, 3).map((ev) => (
                     <span
                       key={ev.id}
