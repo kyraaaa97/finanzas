@@ -8,6 +8,7 @@ import {
   PiggyBank,
   Target,
   CalendarDays,
+  ShoppingCart,
   Wallet,
 } from "lucide-react";
 import { classNames } from "@/lib/utils";
@@ -18,6 +19,7 @@ const nav = [
   { href: "/budgets", label: "Presupuestos", icon: PiggyBank },
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/calendar", label: "Calendario", icon: CalendarDays },
+  { href: "/market", label: "Súper", icon: ShoppingCart },
 ];
 
 export default function Sidebar() {
