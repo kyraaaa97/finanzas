@@ -53,28 +53,47 @@ function parseReceipt(text: string): ScanRow[] {
     .map((l) => l.trim())
     .filter(Boolean);
   const items: ScanRow[] = [];
+  // Líneas de encabezado / totales / pie que NO son productos.
   const skipRe =
-    /total|subtotal|rut|boleta|fecha|vuelto|efectivo|tarjeta|cambio|iva|nro|n°|cliente|gracias|ticket|caja|autoriza|monto|propina/i;
-  const priceRe = /(\d{1,3}(?:[.,]\d{3})+|\d{3,6})(?!.*\d)/;
-  const discRe = /desc|dcto|ahorro|promo|rebaj|oferta/i;
-  for (const line of lines) {
+    /subtotal|total|afecto|exento|\biva\b|vuelto|efectivo|tarjeta|d[eé]bito|cr[eé]dito|cambio|\brut\b|boleta|bol\.?\s*elect|fecha|hora|caja|\bsuc\b|providencia|santiago|art[ií]c|n[uú]mero|unico|oper|c[oó]digo|autoriza|comprobante|\bventa\b|club|acumula|cliente|beneficios|movimientos|precios|bajos|siempre|www|\.cl|local|atend|monto|propina/i;
+  const discRe = /desc|dcto|ahorro|promo|rebaj|oferta|ahorra/i;
+  // Precio de producto: SIEMPRE lleva signo $ en las boletas chilenas.
+  const priceRe = /\$\s*(\d{1,3}(?:[.,]\d{3})+|\d{2,6})/;
+
+  for (const raw of lines) {
+    const line = raw;
+    const pm = line.match(priceRe);
+
+    // Si es línea de descuento, restar al último producto.
+    if (discRe.test(line) && pm && items.length) {
+      const p = Number(pm[1].replace(/[^\d]/g, ""));
+      items[items.length - 1].price = Math.max(
+        0,
+        items[items.length - 1].price - p
+      );
+      continue;
+    }
+
     if (skipRe.test(line)) continue;
-    const m = line.match(priceRe);
-    if (!m || m.index === undefined) continue;
-    const price = Number(m[1].replace(/[^\d]/g, ""));
-    if (!price || price < 50) continue;
+    if (!pm || pm.index === undefined) continue;
+
+    const price = Number(pm[1].replace(/[^\d]/g, ""));
+    if (!price || price < 100 || price > 1000000) continue;
+
+    // Nombre = texto antes del $, quitando códigos de barras y prefijos.
     let name = line
-      .slice(0, m.index)
+      .slice(0, pm.index)
+      .replace(/\b\d{5,}\b/g, " ") // quita códigos largos (EAN, etc.)
+      .replace(/^[A-Za-z]{1,4}:\s*/, "") // quita prefijo tipo "CO:"
+      .replace(/^[\s\d.:#*\-/]+/, "") // quita símbolos/números iniciales
       .replace(/[^0-9A-Za-zÁÉÍÓÚáéíóúÑñ %.\-]/g, " ")
       .replace(/\s{2,}/g, " ")
       .trim();
-    const isDiscount = discRe.test(line) || /^-/.test(line);
-    if (isDiscount && items.length) {
-      const last = items[items.length - 1];
-      last.price = Math.max(0, last.price - price);
-      continue;
-    }
-    if (name.length < 2) name = "Producto";
+
+    // Debe tener letras suficientes (descarta líneas de puros códigos).
+    const letters = (name.match(/[A-Za-zÁÉÍÓÚáéíóúÑñ]/g) || []).length;
+    if (letters < 3) continue;
+
     items.push({ name, category: "", price });
   }
   return items;
