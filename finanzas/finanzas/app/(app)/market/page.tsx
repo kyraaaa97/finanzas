@@ -25,6 +25,7 @@ import {
   type MarketItem,
 } from "./actions";
 
+// Carga el lector de texto (OCR) gratuito desde un CDN, solo cuando se usa.
 function loadTesseract(): Promise<any> {
   return new Promise((resolve, reject) => {
     if (typeof window === "undefined") return reject(new Error("no window"));
@@ -45,6 +46,7 @@ interface ScanRow {
   price: number;
 }
 
+// Intenta armar una lista de productos a partir del texto leído de la boleta.
 function parseReceipt(text: string): ScanRow[] {
   const lines = text
     .split("\n")
@@ -95,7 +97,7 @@ function catColor(name: string | null): string {
 }
 
 function monthPrefix(): string {
-  return today().slice(0, 7);
+  return today().slice(0, 7); // YYYY-MM
 }
 
 export default function MarketPage() {
@@ -126,6 +128,7 @@ export default function MarketPage() {
   const needed = items.filter((i) => i.type === "needed");
   const purchases = items.filter((i) => i.type === "purchase");
 
+  // Compras del mes actual
   const monthPurchases = purchases.filter(
     (p) => (p.date ?? "").slice(0, 7) === monthPrefix()
   );
@@ -134,6 +137,7 @@ export default function MarketPage() {
     0
   );
 
+  // Datos del gráfico: gasto por categoría (mes)
   const byCat = new Map<string, number>();
   for (const p of monthPurchases) {
     const key = p.category ?? "Otros";
@@ -166,6 +170,7 @@ export default function MarketPage() {
     startTransition(async () => {
       const res = await addPurchase(formData);
       if (res.ok) {
+        // limpiar el formulario
         const form = document.getElementById(
           "purchase-form"
         ) as HTMLFormElement | null;
@@ -184,6 +189,7 @@ export default function MarketPage() {
     });
   }
 
+  // ---- Escanear boleta (OCR gratuito, en el teléfono; la foto no se guarda) ----
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -246,6 +252,7 @@ export default function MarketPage() {
         subtitle="Lo que falta comprar y el registro de compras."
       />
 
+      {/* Tabs */}
       <div className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
         <button
           onClick={() => setTab("needed")}
@@ -272,6 +279,7 @@ export default function MarketPage() {
       {loading ? (
         <div className="card text-center text-sm text-gray-400">Cargando…</div>
       ) : tab === "needed" ? (
+        /* ---------- COSAS QUE FALTAN ---------- */
         <div>
           <div className="card mb-4">
             <label className="label">Agregar algo que falta</label>
@@ -355,7 +363,9 @@ export default function MarketPage() {
           )}
         </div>
       ) : (
+        /* ---------- COMPRAS ---------- */
         <div>
+          {/* Total + gráfico */}
           <div className="card mb-4">
             <div className="mb-3 flex items-center justify-between">
               <div>
@@ -411,6 +421,7 @@ export default function MarketPage() {
             )}
           </div>
 
+          {/* Escanear boleta */}
           <input
             ref={fileRef}
             type="file"
@@ -428,6 +439,7 @@ export default function MarketPage() {
             {scanning ? "Leyendo la boleta…" : "Escanear boleta (beta)"}
           </button>
 
+          {/* Registrar compra */}
           <div className="card mb-4">
             <label className="label">Registrar una compra</label>
             <form id="purchase-form" action={handleAddPurchase} className="space-y-2">
@@ -476,6 +488,7 @@ export default function MarketPage() {
             </form>
           </div>
 
+          {/* Lista de compras del mes */}
           {monthPurchases.length === 0 ? (
             <div className="card text-center text-sm text-gray-500">
               No hay compras este mes todavía.
