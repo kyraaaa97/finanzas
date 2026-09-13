@@ -73,6 +73,26 @@ export async function addPurchase(formData: FormData): Promise<Result> {
   return { ok: true };
 }
 
+export async function addPurchasesBulk(
+  items: { name: string; category: string; price: number; date: string }[]
+): Promise<Result> {
+  const clean = items
+    .filter((i) => i.name.trim() && i.price > 0)
+    .map((i) => ({
+      type: "purchase" as const,
+      name: i.name.trim(),
+      category: i.category || null,
+      price: i.price,
+      date: i.date || new Date().toISOString().slice(0, 10),
+    }));
+  if (clean.length === 0) return { ok: false, error: "No hay productos válidos." };
+
+  const supabase = createClient();
+  const { error } = await supabase.from("market_items").insert(clean);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function deleteItem(id: string): Promise<Result> {
   const supabase = createClient();
   const { error } = await supabase.from("market_items").delete().eq("id", id);
