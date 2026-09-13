@@ -426,7 +426,6 @@ export default function MarketPage() {
             ref={fileRef}
             type="file"
             accept="image/*"
-            capture="environment"
             onChange={handleFile}
             className="hidden"
           />
