@@ -9,6 +9,7 @@ import {
   Target,
   CalendarDays,
   ShoppingCart,
+  ListChecks,
   Wallet,
 } from "lucide-react";
 import { classNames } from "@/lib/utils";
@@ -20,6 +21,7 @@ const nav = [
   { href: "/goals", label: "Metas", icon: Target },
   { href: "/calendar", label: "Calendario", icon: CalendarDays },
   { href: "/market", label: "Súper", icon: ShoppingCart },
+  { href: "/todos", label: "Tareas", icon: ListChecks },
 ];
 
 export default function Sidebar() {
@@ -69,11 +71,11 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={classNames(
-                "flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium",
+                "flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium",
                 active ? "text-brand-700" : "text-gray-500"
               )}
             >
-              <Icon size={20} />
+              <Icon size={18} />
               {item.label}
             </Link>
           );
