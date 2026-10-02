@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import PageHeader from "@/components/PageHeader";
 import TransactionForm from "@/components/TransactionForm";
@@ -7,17 +9,64 @@ import type { Category, Transaction } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function TransactionsPage() {
+const MONTHS = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+];
+
+function monthBounds(ym: string) {
+  const [y, m] = ym.split("-").map(Number);
+  const first = `${ym}-01`;
+  const last = new Date(y, m, 0);
+  const lastStr = `${ym}-${String(last.getDate()).padStart(2, "0")}`;
+  return { first, last: lastStr };
+}
+function shiftMonth(ym: string, delta: number) {
+  const [y, m] = ym.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+function monthLabel(ym: string) {
+  const [y, m] = ym.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${y}`;
+}
+
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams?: { mes?: string };
+}) {
   const supabase = createClient();
+
+  const now = new Date();
+  const currentYm = `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}`;
+  const ym =
+    searchParams?.mes && /^\d{4}-\d{2}$/.test(searchParams.mes)
+      ? searchParams.mes
+      : currentYm;
+  const { first, last } = monthBounds(ym);
 
   const [{ data: categories }, { data: transactions }] = await Promise.all([
     supabase.from("categories").select("*").order("name"),
     supabase
       .from("transactions")
       .select("*, category:categories(*)")
+      .gte("date", first)
+      .lte("date", last)
       .order("date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(300),
+      .order("created_at", { ascending: false }),
   ]);
 
   const cats = (categories ?? []) as Category[];
@@ -30,13 +79,46 @@ export default async function TransactionsPage() {
     .filter((t) => t.type === "expense")
     .reduce((s, t) => s + Number(t.amount), 0);
 
+  const prev = shiftMonth(ym, -1);
+  const next = shiftMonth(ym, 1);
+
   return (
     <div>
       <PageHeader
         title="Movimientos"
-        subtitle="Registra y revisa tus ingresos y gastos."
+        subtitle="Tus ingresos y gastos, mes a mes."
         action={<TransactionForm categories={cats} />}
       />
+
+      <div className="card mb-4 flex items-center justify-between">
+        <Link
+          href={`/transactions?mes=${prev}`}
+          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100"
+          aria-label="Mes anterior"
+        >
+          <ChevronLeft size={20} />
+        </Link>
+        <div className="text-center">
+          <p className="text-sm font-semibold capitalize text-gray-900">
+            {monthLabel(ym)}
+          </p>
+          {ym !== currentYm && (
+            <Link
+              href="/transactions"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700"
+            >
+              Ver mes actual
+            </Link>
+          )}
+        </div>
+        <Link
+          href={`/transactions?mes=${next}`}
+          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100"
+          aria-label="Mes siguiente"
+        >
+          <ChevronRight size={20} />
+        </Link>
+      </div>
 
       <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
         <div className="card p-3 sm:p-5">
