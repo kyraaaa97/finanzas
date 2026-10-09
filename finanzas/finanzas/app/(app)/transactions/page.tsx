@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { Category, Transaction } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+// redeploy: vista por mes
 
 const MONTHS = [
   "enero",
